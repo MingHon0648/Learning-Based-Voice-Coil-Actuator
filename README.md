@@ -44,13 +44,13 @@ This **independent project** (done in my own time, not an advised lab project) a
 
 The actuator is a moving coil with a rigidly attached plate, pushing water. The mechanical and electrical dynamics are
 
-$$
+```math
 (m + m_a)\,\ddot{x} = K_f\, i \;-\; b\,\dot{x} \;-\; c_d\,|\dot{x}|\,\dot{x} \;+\; F_{\text{stop}}(x,\dot{x}) \qquad \text{(Newton's second law)}
-$$
+```
 
-$$
+```math
 L\,\frac{di}{dt} = V - R\,i - K_b\,\dot{x} \qquad \text{(Kirchhoff's voltage law)}
-$$
+```
 
 where $F_{\text{stop}}$ is a stiff spring–damper ($10^5$ N/m, 50 N·s/m) that engages only beyond the ±9.85 mm travel limit (19.7 mm total stroke). The silicone membrane is treated as compliant, with negligible stiffness ($k = 0$).
 
@@ -84,7 +84,7 @@ The two models play different roles. The **full model** ([actuator_sim.py](actua
 
 ## Control task
 
-- **Goal:** command the coil voltage so that the plate tracks $x_{\text{ref}}(t) = 7\,\text{mm}\cdot\sin(2\pi\cdot 4.5\,t)$. This is the firmware's frequency, with an amplitude that stays inside the stroke.
+- **Goal:** command the coil voltage so that the plate tracks $x_{\text{ref}}(t) = 7 \text{mm}\cdot\sin(2\pi\cdot 4.5 t)$. This is the firmware's frequency, with an amplitude that stays inside the stroke.
 - **Control loop:** 1 kHz.
 - **Sensing:** position only, with Gaussian noise σ = 0.05 mm. Velocity is estimated by finite differences.
 - **Actuation:** voltage saturated at ±12 V.
@@ -96,7 +96,7 @@ The two models play different roles. The **full model** ([actuator_sim.py](actua
 | Controller | Description |
 |---|---|
 | **Open-loop** | Replica of the current firmware: ±12 V square wave at 4.5 Hz, ignores the sensor. |
-| **PID** | $K_p = 5000$ V/m, $K_i = 50\,000$ V/(m·s), $K_d = 50$ V·s/m. First-order derivative filter (τ = 2 ms) plus integrator anti-windup. In an ablation, the filter cut voltage chatter from 5.4 to 1.45 V/step with no loss in tracking (0.27 → 0.26 mm RMS) ([pid_control.py](pid_control.py)). No feedforward. |
+| **PID** | $K_p = 5000$ V/m, $K_i = 50{,}000$ V/(m·s), $K_d = 50$ V·s/m. First-order derivative filter (τ = 2 ms) plus integrator anti-windup. In an ablation, the filter cut voltage chatter from 5.4 to 1.45 V/step with no loss in tracking (0.27 → 0.26 mm RMS) ([pid_control.py](pid_control.py)). No feedforward. |
 | **PPO (nominal)** | Stable-Baselines3 PPO, MLP policy, trained on nominal parameters for 1 M steps across 8 parallel environments. |
 | **PPO (DR)** | Same algorithm and hyperparameters, trained for 2 M steps with **domain randomization**: each episode multiplies the parameters by a factor drawn uniformly from the ranges below. |
 
@@ -112,7 +112,7 @@ The two models play different roles. The **full model** ([actuator_sim.py](actua
 
 - **Action:** voltage scaled to $[-1, 1]$ (±12 V).
 - **Observation (6-D, normalized):** measured position, velocity estimate, reference position, reference velocity, error to the *next* reference point, previous action.
-- **Reward per step:** $-e^2 \;-\; 0.01\,(\Delta a)^2 \;-\; \mathbb{1}[\text{at end stop}]$, where $e$ is the position error normalized by the travel limit.
+- **Reward per step:** $-e^2  -  0.01 (\Delta a)^2  -  \mathbf{1}[\text{at end stop}]$, where $e$ is the position error normalized by the travel limit.
 - **Episode:** 1 s (1000 steps) with a random starting phase of the reference.
 
 ### PPO hyperparameters ([train_ppo.py](train_ppo.py), [train_ppo_dr.py](train_ppo_dr.py))
@@ -132,9 +132,9 @@ The environment passes Gymnasium's `check_env`. Before training, I compared the 
 
 | Policy | Expected reward (how it's derived) | Measured |
 |---|---|---|
-| **Zero voltage** | With no voltage there is no force. With $k=0$ and starting at rest, the plate stays at $x=0$. The error is the reference itself, $e = A\sin(\cdot)/X_{\max}$, and $\sin^2$ repeats every half-cycle, so over the 9 half-cycles in a 1 s episode it averages exactly ½ for any starting phase. Expected: $-1000 \cdot \tfrac12 (A/X_{\max})^2 = -500\,(7/9.85)^2 = $ **−252.5** | **−252.5** (exact), RMS 4.92 mm |
-| **Uniform random voltage** | The action-change term has a closed form. For i.i.d. $a_t \sim U[-1,1]$, $\mathbb{E}[(a_t - a_{t-1})^2] = 2\,\mathrm{Var}(a) = 2/3$, so the expected total is $-0.01 \cdot \tfrac23 \cdot 1000 =$ **−6.7**. With no spring ($k=0$), zero-mean random forcing makes the position random-walk, so the plate drifts away from the reference and sometimes into the stops. Expected: tracking **worse than zero voltage** (< −252.5) plus some end-stop penalty. | **−696 ± 134** over 30 episodes: tracking −657.5, action change −6.71 ✓, end stop −31.5 |
-| **Proportional controller** $a = \mathrm{clip}(4\,e_{\text{next}})$ | A reasonable feedback law should track to within a fraction of a millimeter. Steady-state error of ~0.2 mm gives $-1000\,(0.2/9.85)^2 \approx -0.4$. A short start-up transient adds to that, because the plate starts at 0 while the reference starts at a random phase. Expected: **order −1**. | **−1.2** (tracking −1.1), RMS 0.21 mm |
+| **Zero voltage** | With no voltage there is no force. With $k=0$ and starting at rest, the plate stays at $x=0$. The error is the reference itself, $e = A\sin(\cdot)/X_{\max}$, and $\sin^2$ repeats every half-cycle, so over the 9 half-cycles in a 1 s episode it averages exactly ½ for any starting phase. Expected: $-1000 \cdot \tfrac12 (A/X_{\max})^2 = -500 (7/9.85)^2 = -252.5$ | **−252.5** (exact), RMS 4.92 mm |
+| **Uniform random voltage** | The action-change term has a closed form. For i.i.d. $a_t \sim U[-1,1]$, $\mathbb{E}[(a_t - a_{t-1})^2] = 2 \mathrm{Var}(a) = 2/3$, so the expected total is $-0.01 \cdot \tfrac23 \cdot 1000 = -6.7$. With no spring ($k=0$), zero-mean random forcing makes the position random-walk, so the plate drifts away from the reference and sometimes into the stops. Expected: tracking **worse than zero voltage** (< −252.5) plus some end-stop penalty. | **−696 ± 134** over 30 episodes: tracking −657.5, action change −6.71 ✓, end stop −31.5 |
+| **Proportional controller** $a = \mathrm{clip}(4 e_{\text{next}})$ | A reasonable feedback law should track to within a fraction of a millimeter. Steady-state error of ~0.2 mm gives $-1000 (0.2/9.85)^2 \approx -0.4$. A short start-up transient adds to that, because the plate starts at 0 while the reference starts at a random phase. Expected: **order −1**. | **−1.2** (tracking −1.1), RMS 0.21 mm |
 
 If any of these had been off (for example, a sign error in the reward or a units bug in the observation), it would show up here before any training time was spent.
 
