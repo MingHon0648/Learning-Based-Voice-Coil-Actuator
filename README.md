@@ -57,7 +57,7 @@ where $F_{\text{stop}}$ is a stiff spring–damper ($10^5$ N/m, 50 N·s/m) that 
 | Parameter | Value | Source |
 |---|---|---|
 | Moving mass $m$ | 0.1076 kg | SolidWorks mass properties (coil, 2 screws, plate) |
-| Added mass $m_a$ | 0.186 kg | $\tfrac{8}{3}\rho r^3$ (disk), equivalent radius $r=\sqrt{A/\pi}=41.2$ mm |
+| Added mass $m_a$ | 0.186 kg | $\tfrac{8}{3}\rho r^3$ (disk), equivalent radius r = √(A/π) = 41.2 mm |
 | Quadratic drag $c_d$ | 2.99 N·s²/m² | $\tfrac12\rho C_d A$, flat plate $C_d=1.12$, $A=0.005345$ m² |
 | Force / back-EMF constant $K_f = K_b$ | 5.0 N/A | Estimate (typical 12 V VCA) |
 | Coil resistance $R$ | 4.0 Ω | Estimate |
